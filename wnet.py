@@ -1,7 +1,7 @@
-#%%
 import tensorflow as tf
 from tensorflow import keras as K
-#%%
+
+# Convolution module
 class Conv_module(K.layers.Layer):
     def __init__(self, out_channel, kernel_size = 3, strides=(1,1)):
         super(Conv_module,  self).__init__()
@@ -14,7 +14,8 @@ class Conv_module(K.layers.Layer):
             img = self.conv_layers[i](img)
             img = self.batch_norm[i](img)
         return img
-#%%
+
+# Depthwise seperable convolution module
 class Dsconv_module(K.layers.Layer):
     def __init__(self, out_channel, kernel_size=3, strides=(1,1)):
         super(Dsconv_module, self).__init__()
@@ -27,7 +28,8 @@ class Dsconv_module(K.layers.Layer):
             img = self.dsconv_layers[i](img)
             img = self.batch_norm[i](img)
         return img
-#%%
+
+# Upsampling step DS conv + conventional conv
 class Upconv_module(K.layers.Layer):
     def __init__(self, out_channel, kernel_size=3, strides=(1,1)):
         super(Upconv_module, self).__init__()
@@ -42,7 +44,8 @@ class Upconv_module(K.layers.Layer):
         dsconv_img = self.dsconv_layer(half_ch_img)
         dsconv_img = self.batch_norm[1](dsconv_img)
         return dsconv_img
-#%%
+
+# Unet encoder
 class Unet_enc(K.layers.Layer):
     def __init__(self, num_class, conv1_out_channel=[64, 64], conv2_out_channel=[64, 64]):
         super(Unet_enc, self).__init__()
