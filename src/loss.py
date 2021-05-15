@@ -19,7 +19,7 @@ class SoftNcut_loss(K.losses.Loss):
         softncut_loss = self.K - assoc_nomi / assoc_denomi
         
         return softncut_loss
-#%%
+
 class Recon_loss(K.losses.Loss):
     def __init__(self):
         super(Recon_loss, self).__init__()
