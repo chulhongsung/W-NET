@@ -1,8 +1,7 @@
 # source: https://github.com/fkodom/wnet-unsupervised-image-segmentation
 
 import numpy as np
-# pip install git+https://github.com/lucasb-eyer/pydensecrf.git
-import pydensecrf.densecrf as dcrf
+import pydensecrf.densecrf as dcrf # pip install git+https://github.com/lucasb-eyer/pydensecrf.git
 from pydensecrf.utils import unary_from_softmax, create_pairwise_bilateral
 
 def crf_fit_predict(softmax: np.ndarray, image: np.ndarray, niter: int = 150):
