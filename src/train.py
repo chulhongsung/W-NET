@@ -35,6 +35,7 @@ def train_step(model, weights, image):
     optimizer.apply_gradients(zip(grad2, model.trainable_weights))
     train_loss(loss) 
 
+# Model train
 EPOCHS = 100
 
 for epoch in range(EPOCHS):
@@ -43,21 +44,23 @@ for epoch in range(EPOCHS):
     template = 'EPOCH: {}, Train Loss: {}'
     print(template.format(epoch+1, train_loss.result()))
 
+# Model save & load
 wnet.save_weights('./model/wnet_' + datetime.today().strftime("%Y%m%d%H%M%S"))
 # wnet2 = Wnet(10)
 # wnet2.load_weights('./model/wnet')
 
 img_seg, recon = wnet(train_img)
 
+# CRF post-processing
 NITER = 150
 
 softmax = tf.transpose(img_seg, [0, 3, 1, 2])
 train_img_crf = np.transpose(train_img, [0, 3, 1, 2])
 
 crf_img = crf_batch_fit_predict(softmax, train_img_crf, NITER)
-
 crf_img = np.transpose(crf_img, [0, 2, 3, 1])
 
+# Figure
 fig = plt.figure()
 
 rows = 2
