@@ -1,5 +1,5 @@
 # source: https://github.com/fkodom/wnet-unsupervised-image-segmentation
-
+import numpy as np
 import pydensecrf.densecrf as dcrf
 from pydensecrf.utils import unary_from_softmax, create_pairwise_bilateral
 
