@@ -57,6 +57,7 @@ class Unet_enc(K.layers.Layer):
         self.pixelwise_conv = K.layers.Conv2D(num_class, kernel_size=1, strides=(1,1), padding='same', activation='relu')
         self.softmax = K.layers.Softmax(axis=-1)
         
+    # input image shape: (96, 96, 3)
     def call(self, img):
         # down-sampling
         module1 = self.conv_module(img) # shape: (batch_size, 96, 96, 64)
@@ -95,28 +96,29 @@ class Unet_dec(K.layers.Layer):
         
         self.final_conv_module = Conv_module(conv2_out_channel)
         self.pixelwise_conv = K.layers.Conv2D(3, kernel_size=1, strides=(1,1), padding='same', activation='relu')
-        
+    
+    # input image shape: (96, 96, num_class)
     def call(self, img):
         # down-sampling
-        module10 = self.conv_module(img) # shape: (batch_size, 448, 384, 64)
-        pooled_module10 = self.max_pool(module10) # shape: (batch_size, 224, 192, 64)
-        module11 = self.down_dsconv_module[0](pooled_module10) # shape: (batch_size, 224, 192, 128)
-        pooled_module11 = self.max_pool(module11) # shape: (batch_size, 112, 96, 128)
-        module12 = self.down_dsconv_module[1](pooled_module11) # shape: (batch_size, 112, 96, 256)
-        pooled_module12 = self.max_pool(module12) # shape: (batch_size, 56, 48, 256)
-        module13 = self.down_dsconv_module[2](pooled_module12) # shape: (batch_size, 56, 48, 512)
-        pooled_module13 = self.max_pool(module13) # shape: (batch_size, 28, 24, 512)
-        module14 = self.down_dsconv_module[3](pooled_module13) # bottle neck point shape: (batch_size, 28, 24, 1024)
+        module10 = self.conv_module(img) # shape: (batch_size, 96, 96, 64)
+        pooled_module10 = self.max_pool(module10) # shape: (batch_size, 48, 48, 64)
+        module11 = self.down_dsconv_module[0](pooled_module10) # shape: (batch_size, 48, 48, 128)
+        pooled_module11 = self.max_pool(module11) # shape: (batch_size, 24, 24, 128)
+        module12 = self.down_dsconv_module[1](pooled_module11) # shape: (batch_size, 24, 24, 256)
+        pooled_module12 = self.max_pool(module12) # shape: (batch_size, 12, 12, 256)
+        module13 = self.down_dsconv_module[2](pooled_module12) # shape: (batch_size, 12, 12, 512)
+        pooled_module13 = self.max_pool(module13) # shape: (batch_size, 6, 6, 512)
+        module14 = self.down_dsconv_module[3](pooled_module13) # bottle neck point shape: (batch_size, 6, 6, 1024)
         
         # up-sampling
-        deconv_module14 = self.deconv[0](module14) # shape: (batch_size, 56, 48, 512)
-        module15 = self.up_conv_module[0](tf.keras.layers.Concatenate()([module13, deconv_module14])) # shape: (batch_size, 56, 48, 512)
-        deconv_module15 = self.deconv[1](module15)
-        module16 = self.up_conv_module[1](tf.keras.layers.Concatenate()([module12, deconv_module15]))
-        deconv_module16 = self.deconv[2](module16)
-        module17 = self.up_conv_module[2](tf.keras.layers.Concatenate()([module11, deconv_module16]))
-        deconv_module17 = self.deconv[3](module17)
-        module18 = self.pixelwise_conv(self.final_conv_module(tf.keras.layers.Concatenate()([module10, deconv_module17]))) # recon (batch_size, 448, 384, 3)
+        deconv_module14 = self.deconv[0](module14) # shape: (batch_size, 6, 6, 512)
+        module15 = self.up_conv_module[0](tf.keras.layers.Concatenate()([module13, deconv_module14])) # shape: (batch_size, 12, 12, 512)
+        deconv_module15 = self.deconv[1](module15) # shape: (batch_size, 12, 12, 256)
+        module16 = self.up_conv_module[1](tf.keras.layers.Concatenate()([module12, deconv_module15])) # shape: (batch_size, 24, 24, 256)
+        deconv_module16 = self.deconv[2](module16) # shape: (batch_size, 48, 48, 128)
+        module17 = self.up_conv_module[2](tf.keras.layers.Concatenate()([module11, deconv_module16])) # shape: (batch_size, 96, 96, 128)
+        deconv_module17 = self.deconv[3](module17) # shape: (batch_size, 96, 96, 64)
+        module18 = self.pixelwise_conv(self.final_conv_module(tf.keras.layers.Concatenate()([module10, deconv_module17]))) # recon (batch_size, 96, 96, 3)
         
         return module18
 
@@ -127,7 +129,7 @@ class Wnet(K.models.Model):
         self.unet_decoder = Unet_dec(conv1_out_channel, conv2_out_channel)
         
     def call(self, img):
-        softmax = self.unet_encoder(img) # shape: (batch_size, 448, 384, num_class)
-        recon_img = self.unet_decoder(softmax) # shape: (batch_size, 448, 384, 3)
+        softmax = self.unet_encoder(img) # shape: (batch_size, 96, 96, num_class)
+        recon_img = self.unet_decoder(softmax) # shape: (batch_size, 96, 96, 3)
         
         return softmax, recon_img
