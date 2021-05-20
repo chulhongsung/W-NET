@@ -59,26 +59,26 @@ class Unet_enc(K.layers.Layer):
         
     def call(self, img):
         # down-sampling
-        module1 = self.conv_module(img) # shape: (batch_size, 448, 384, 64)
-        pooled_module1 = self.max_pool(module1) # shape: (batch_size, 224, 192, 64)
-        module2 = self.down_dsconv_module[0](pooled_module1) # shape: (batch_size, 224, 192, 128)
-        pooled_module2 = self.max_pool(module2) # shape: (batch_size, 112, 96, 128)
-        module3 = self.down_dsconv_module[1](pooled_module2) # shape: (batch_size, 112, 96, 256)
-        pooled_module3 = self.max_pool(module3) # shape: (batch_size, 56, 48, 256)
-        module4 = self.down_dsconv_module[2](pooled_module3) # shape: (batch_size, 56, 48, 512)
-        pooled_module4 = self.max_pool(module4) # shape: (batch_size, 28, 24, 512)
-        module5 = self.down_dsconv_module[3](pooled_module4) # bottle neck point shape: (batch_size, 28, 24, 1024)
+        module1 = self.conv_module(img) # shape: (batch_size, 96, 96, 64)
+        pooled_module1 = self.max_pool(module1) # shape: (batch_size, 48, 48, 64)
+        module2 = self.down_dsconv_module[0](pooled_module1) # shape: (batch_size, 48, 48, 128)
+        pooled_module2 = self.max_pool(module2) # shape: (batch_size, 24, 24, 128)
+        module3 = self.down_dsconv_module[1](pooled_module2) # shape: (batch_size, 24, 24, 256)
+        pooled_module3 = self.max_pool(module3) # shape: (batch_size, 12, 12, 256)
+        module4 = self.down_dsconv_module[2](pooled_module3) # shape: (batch_size, 12, 12, 512)
+        pooled_module4 = self.max_pool(module4) # shape: (batch_size, 6, 6, 512)
+        module5 = self.down_dsconv_module[3](pooled_module4) # bottle neck point shape: (batch_size, 6, 6, 1024)
         
         # up-sampling
-        deconv_module5 = self.deconv[0](module5) # shape: (batch_size, 56, 48, 512)
-        module6 = self.up_conv_module[0](tf.keras.layers.Concatenate()([module4, deconv_module5])) # shape: (batch_size, 56, 48, 512)
-        deconv_module6 = self.deconv[1](module6)
-        module7 = self.up_conv_module[1](tf.keras.layers.Concatenate()([module3, deconv_module6]))
-        deconv_module7 = self.deconv[2](module7)
-        module8 = self.up_conv_module[2](tf.keras.layers.Concatenate()([module2, deconv_module7]))
-        deconv_module8 = self.deconv[3](module8)
-        module9 = self.pixelwise_conv(self.final_conv_module(tf.keras.layers.Concatenate()([module1, deconv_module8])))
-        softmax = self.softmax(module9) # shape: (batch_size, 448, 384, num_class)
+        deconv_module5 = self.deconv[0](module5) # shape: (batch_size, 6, 6, 512)
+        module6 = self.up_conv_module[0](tf.keras.layers.Concatenate()([module4, deconv_module5])) # shape: (batch_size, 12, 12, 512)
+        deconv_module6 = self.deconv[1](module6) # shape: (batch_size, 12, 12, 256)
+        module7 = self.up_conv_module[1](tf.keras.layers.Concatenate()([module3, deconv_module6])) # shape: (batch_size, 24, 24, 256)
+        deconv_module7 = self.deconv[2](module7) # shape: (batch_size, 48, 48, 128)
+        module8 = self.up_conv_module[2](tf.keras.layers.Concatenate()([module2, deconv_module7])) # shape: (batch_size, 96, 96, 128)
+        deconv_module8 = self.deconv[3](module8) # shape: (batch_size, 96, 96, 64)
+        module9 = self.pixelwise_conv(self.final_conv_module(tf.keras.layers.Concatenate()([module1, deconv_module8]))) # shape: (batch_size, 96, 96, num_class)
+        softmax = self.softmax(module9) # shape: (batch_size, 96, 96, num_class)
         
         return softmax
 
