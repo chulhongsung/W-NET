@@ -10,7 +10,7 @@ weights = np.load("ncut_weights_stl10_30.npy")
 train_img = np.load("train_stl10_30.npy")
 
 BATCH_SIZE = 5
-NUM_CLASS = 8
+NUM_CLASS = 5
 
 stl10_30 = tf.data.Dataset.from_tensor_slices((np.array(weights, dtype=np.float32), train_img))
 batch_stl10_30 = stl10_30.batch(BATCH_SIZE)
