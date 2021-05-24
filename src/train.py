@@ -7,7 +7,31 @@ from wnet import Wnet
 from crf import crf_batch_fit_predict
 
 weights = np.load("ncut_weights_stl10_30.npy")
-train_img = np.load("train_stl10_30.npy")
+# train_img = np.load("train_stl10_30.npy")
+
+train_stl10, test_stl10 = tfds.load('stl10', split=['train', 'test'], shuffle_files=True)
+train_stl10_ = train_stl10.take(100) 
+
+# for example in train_stl10_:  
+#   print(list(example.keys()))
+#   print(example["image"].shape)
+  
+train_img = []
+train_img_objects = []
+
+for example in train_stl10_:  
+  # print(list(example.keys())
+    train_img.append(example['image'])
+    train_img_objects.append(example['label'])
+    # train_img_objects.append(example['objects'])    
+    
+train_img = tf.stack(train_img)/255
+num_image = train_img.shape[0]
+
+label = []
+
+for i in range(num_image):
+    label.append(train_img_objects[i].numpy().tolist())
 
 BATCH_SIZE = 5
 NUM_CLASS = 5
@@ -45,7 +69,7 @@ for epoch in range(EPOCHS):
     print(template.format(epoch+1, train_loss.result()))
 
 # Model save & load
-wnet.save_weights('./model/wnet_' + datetime.today().strftime("%Y%m%d%H%M%S"))
+wnet.save_weights('./model/wnet_C' + str(NUM_CLASS) + '_' + datetime.today().strftime("%Y%m%d%H%M%S"))
 # wnet2 = Wnet(10)
 # wnet2.load_weights('./model/wnet')
 
